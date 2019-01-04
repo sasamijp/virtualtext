@@ -1,0 +1,85 @@
+<style>
+    .card{
+        position: relative;
+        height: 150px;
+        top: 0;
+    }
+    .thumbnail{
+        position: relative;
+        left: 0;
+        top: 0;
+        width: 100%;
+        opacity: 0.1;
+    }
+    .thumbnail-img{
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+    body{
+        margin: 0;
+        font-family: serif;
+    }
+    .texts{
+        position: absolute;
+        top:0;
+        height: 150px;
+        text-overflow: clip;
+        overflow: hidden;
+    }
+
+    .words{
+        position: absolute;
+        top:10px;
+        height: 140px;
+        text-overflow: clip;
+        overflow: hidden;
+        font-family: sans-serif;
+        color: coral;
+    }
+</style>
+
+<script>
+    ws = new WebSocket("ws://virtual-text.online/websocket");
+    ws.onmessage = function(ev) {
+        obj = JSON.parse(ev.data);
+        let h = `<a class="thumbnail" href="https://www.youtube.com/channel/${obj["channel_id"]}">
+                    <img class="thumbnail-img" src='${obj["thumbnail_url"]}'>
+                 </a>`;
+        if(obj["texts"].length === 0){
+            return;
+        }
+        if(obj["nouns"][0][1] > 7) {
+            h += `<div class='words' id='w${obj["channel_id"]}'>`;
+
+            for (let i in obj["nouns"]) {
+                if(obj["nouns"][i][1] <= 7) {
+                    break;
+                }
+                h += `<span style='font-size: ${(obj["nouns"][i][1] * 7).toString()}'>` + obj["nouns"][i][0] + " </span> ";
+            }
+            h += "</div>";
+        }else{
+            if(document.getElementById("w"+obj["channel_id"]) != null) {
+                document.getElementById("w" + obj["channel_id"]).innerText = " ";
+            }
+        }
+
+        h += "<div class='texts'>" +
+            `<a href="https://www.youtube.com/channel/${obj["channel_id"]}">${obj["name"]} </a>`
+        for(let i in obj["texts"]){
+            h += `<span>` + obj["texts"][i] + " </span> ";
+        }
+        h += "</div>";
+        if(document.getElementById(obj["channel_id"]) == null){
+            document.getElementById('variable').insertAdjacentHTML('afterbegin',
+                `<div id='${obj["channel_id"]}' class="card">` +h + "</div>");
+        }else{
+            document.getElementById(obj["channel_id"]).innerHTML = h;
+        }
+    }
+</script>
+
+<body>
+<span id="variable"></span>
+</body>
